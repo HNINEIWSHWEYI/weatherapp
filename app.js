@@ -371,9 +371,9 @@ function renderDaily(data) {
  * Actions
  * ------------------------------------------------------------------ */
 
-async function loadPlace(place) {
+async function loadPlace(place, { persist = true } = {}) {
   state.place = place;
-  localStorage.setItem('skycast.place', JSON.stringify(place));
+  if (persist) localStorage.setItem('skycast.place', JSON.stringify(place));
   showStatus(`Loading weather for ${placeLabel(place)}…`, false, true);
   try {
     const data = await fetchForecast(place.latitude, place.longitude);
@@ -535,8 +535,13 @@ els.units.forEach((btn) => {
   }
 
   // Default to the user's own location; fall back to London if they decline
-  // the permission prompt or geolocation fails.
+  // the permission prompt or geolocation fails. The fallback is intentionally
+  // NOT persisted, so the next visit tries geolocation again instead of
+  // getting stuck on London forever.
   useMyLocation(() => {
-    loadPlace({ name: 'London', admin1: 'England', country: 'United Kingdom', latitude: 51.5085, longitude: -0.1257 });
+    loadPlace(
+      { name: 'London', admin1: 'England', country: 'United Kingdom', latitude: 51.5085, longitude: -0.1257 },
+      { persist: false }
+    );
   });
 })();
