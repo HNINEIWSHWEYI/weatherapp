@@ -383,8 +383,9 @@ async function loadPlace(place) {
   }
 }
 
-function useMyLocation() {
+function useMyLocation(onUnavailable) {
   if (!navigator.geolocation) {
+    if (onUnavailable) return onUnavailable();
     showStatus('Your browser does not support location lookup. Try searching for a city.', true);
     return;
   }
@@ -407,7 +408,10 @@ function useMyLocation() {
       } catch { /* keep the generic label */ }
       loadPlace(place);
     },
-    (err) => showStatus(`Location unavailable (${err.message}). Try searching for a city instead.`, true),
+    (err) => {
+      if (onUnavailable) return onUnavailable();
+      showStatus(`Location unavailable (${err.message}). Try searching for a city instead.`, true);
+    },
     { timeout: 10000, maximumAge: 300000 }
   );
 }
@@ -524,17 +528,15 @@ els.units.forEach((btn) => {
  * Boot
  * ------------------------------------------------------------------ */
 
-(async function init() {
+(function init() {
   const saved = localStorage.getItem('skycast.place');
   if (saved) {
     try { return loadPlace(JSON.parse(saved)); } catch { /* fall through */ }
   }
 
-  // Only auto-locate if the user already granted permission — never prompt on first paint.
-  try {
-    const perm = await navigator.permissions?.query({ name: 'geolocation' });
-    if (perm?.state === 'granted') return useMyLocation();
-  } catch { /* Permissions API unavailable */ }
-
-  loadPlace({ name: 'London', admin1: 'England', country: 'United Kingdom', latitude: 51.5085, longitude: -0.1257 });
+  // Default to the user's own location; fall back to London if they decline
+  // the permission prompt or geolocation fails.
+  useMyLocation(() => {
+    loadPlace({ name: 'London', admin1: 'England', country: 'United Kingdom', latitude: 51.5085, longitude: -0.1257 });
+  });
 })();

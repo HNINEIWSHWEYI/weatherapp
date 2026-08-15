@@ -20,6 +20,7 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
+  height: 100dvh;
   overflow: hidden;
 }
 
@@ -32,14 +33,20 @@ body {
     radial-gradient(800px 600px at 95% 5%, color-mix(in srgb, var(--bg-glow-2) 40%, transparent), transparent 70%);
   background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
   transition: background-image .6s ease;
 }
 
 .app {
   max-width: 1200px;
   height: 100vh;
+  height: 100dvh;
   margin: 0 auto;
   padding: clamp(12px, 2vh, 20px) 20px clamp(8px, 1.5vh, 14px);
+  padding-left: max(20px, env(safe-area-inset-left));
+  padding-right: max(20px, env(safe-area-inset-right));
+  padding-top: max(clamp(12px, 2vh, 20px), env(safe-area-inset-top));
+  padding-bottom: max(clamp(8px, 1.5vh, 14px), env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   gap: clamp(8px, 1.5vh, 16px);
@@ -99,6 +106,7 @@ body {
   background: transparent;
   color: var(--text);
   font: inherit;
+  font-size: max(16px, 1rem);
   padding: 8px 0;
   outline: none;
 }
@@ -136,6 +144,7 @@ body {
   box-shadow: var(--shadow);
   max-height: 320px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .suggestions li {
   padding: 10px 12px;
@@ -178,6 +187,7 @@ body {
 
 #main {
   flex: 1;
+  min-width: 0;
   min-height: 0;
   display: flex;
 }
@@ -204,6 +214,7 @@ body {
 /* ---------- Cards ---------- */
 .content {
   flex: 1;
+  min-width: 0;
   min-height: 0;
   width: 100%;
   display: grid;
@@ -224,6 +235,7 @@ body {
   padding: clamp(14px, 2.2vh, 22px);
   backdrop-filter: blur(14px);
   box-shadow: var(--shadow);
+  min-width: 0;
   min-height: 0;
 }
 
@@ -249,12 +261,17 @@ body {
   justify-content: space-between;
   align-items: flex-start;
   gap: 16px;
+  min-width: 0;
+}
+.current-head > div:first-child {
+  min-width: 0;
 }
 .place {
   margin: 0 0 4px;
   font-size: clamp(1.15rem, 2.6vh, 1.6rem);
   font-weight: 700;
   letter-spacing: -0.02em;
+  overflow-wrap: break-word;
 }
 .current-icon svg { width: clamp(54px, 9vh, 84px); height: clamp(54px, 9vh, 84px); }
 
@@ -264,9 +281,10 @@ body {
   gap: clamp(16px, 3vw, 28px);
   align-items: center;
   margin-top: clamp(4px, 1vh, 10px);
+  min-width: 0;
 }
 
-.temp-block { min-width: 170px; }
+.temp-block { flex-shrink: 0; min-width: 170px; }
 .temp {
   margin: 0;
   font-size: clamp(2.4rem, 7vh, 4.4rem);
@@ -282,11 +300,14 @@ body {
 
 .metrics {
   flex: 1 1 340px;
+  min-width: 0;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   gap: clamp(8px, 1.6vh, 14px);
   margin: 0;
 }
+.metric { min-width: 0; }
+.metric dt, .metric dd { overflow-wrap: break-word; }
 .metric dt {
   font-size: .7rem;
   text-transform: uppercase;
@@ -309,6 +330,7 @@ body {
   margin: 0 -6px;
   padding: 0 6px;
   scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   align-items: stretch;
 }
@@ -355,6 +377,7 @@ body {
 /* ---------- Daily ---------- */
 .daily {
   flex: 1;
+  min-width: 0;
   min-height: 0;
   list-style: none;
   margin: 0; padding: 0;
@@ -363,9 +386,10 @@ body {
 }
 .daily li {
   flex: 1;
+  min-width: 0;
   min-height: 0;
   display: grid;
-  grid-template-columns: 64px 24px 1fr auto;
+  grid-template-columns: 64px 24px minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
   padding: 2px 6px;
@@ -551,9 +575,31 @@ body.wx-fog         { --bg-glow-1: #334155; --bg-glow-2: #475569; }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 700px) {
-  html, body { height: auto; overflow-y: auto; }
-  .app { height: auto; min-height: 100vh; }
-  #main { display: block; }
+  /* html/body stay fixed at the viewport size; .app itself becomes the
+     scrolling element. Letting body scroll on iOS Safari fights with the
+     position:fixed #weather-bg layer and dvh — scoping the scroll to .app
+     avoids that and keeps the background pinned. */
+  html, body { height: 100dvh; overflow: hidden; }
+  .app {
+    height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, .28) transparent;
+  }
+  .app::-webkit-scrollbar { width: 6px; }
+  .app::-webkit-scrollbar-track { background: transparent; }
+  .app::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, .28);
+    border-radius: 999px;
+  }
+  .app::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, .4); }
+  /* #main is a flex item of .app; its base flex:1/min-height:0 would let it
+     shrink to fit .app's now-fixed height instead of overflowing it, which
+     is what actually drives the scroll — so pin it to its content size. */
+  #main { display: block; flex: none; }
   .content { grid-template-columns: 1fr; grid-template-rows: auto; }
   .card.current, .hourly-card, .daily-card { grid-column: 1; grid-row: auto; }
   .hourly-scroll { flex: none; }
@@ -565,8 +611,31 @@ body.wx-fog         { --bg-glow-1: #334155; --bg-glow-2: #475569; }
   .temp { font-size: 3.2rem; }
   .current-icon svg { width: 60px; height: 60px; }
   .place { font-size: 1.25rem; }
-  .daily li { grid-template-columns: 84px 30px 1fr auto; gap: 10px; }
+  .daily li { grid-template-columns: 84px 30px minmax(0, 1fr) auto; gap: 10px; }
   .card { padding: 16px; }
+
+  /* Comfortable touch targets (Apple HIG / Material both call for ~44px) */
+  .icon-btn { width: 44px; height: 44px; }
+  .unit-toggle button { padding: 10px 16px; }
+  #search-input { padding: 10px 0; }
+  .suggestions li { padding: 12px; }
+  .hourly li { width: 68px; }
+}
+
+@media (max-width: 380px) {
+  .app { padding-left: max(14px, env(safe-area-inset-left)); padding-right: max(14px, env(safe-area-inset-right)); }
+  .brand-mark { font-size: 1.2rem; }
+  .temp { font-size: 2.7rem; }
+  .place { font-size: 1.1rem; }
+  .metrics { grid-template-columns: repeat(2, 1fr); }
+  .daily li { grid-template-columns: 66px 24px minmax(0, 1fr) auto; gap: 6px; }
+  .card { padding: 12px; }
+  .hourly li { width: 60px; }
+}
+
+/* Android Chrome respects dvh but some older WebViews don't; fall back safely */
+@supports not (height: 100dvh) {
+  html, body { height: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
