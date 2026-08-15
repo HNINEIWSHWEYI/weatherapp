@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skycast — Weather</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛅</text></svg>">
+</head>
+<body>
+  <div id="weather-bg" aria-hidden="true"></div>
+  <div class="app">
+
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">⛅</span>
+        <span class="brand-name">Skycast</span>
+      </div>
+
+      <div class="search">
+        <form id="search-form" autocomplete="off">
+          <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+          </svg>
+          <input id="search-input" type="text" placeholder="Search for a city…"
+                 aria-label="Search for a city" role="combobox"
+                 aria-expanded="false" aria-controls="suggestions">
+          <button type="button" id="locate-btn" class="icon-btn" title="Use my location" aria-label="Use my location">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="3.5"></circle>
+              <circle cx="12" cy="12" r="8"></circle>
+              <line x1="12" y1="1" x2="12" y2="4"></line>
+              <line x1="12" y1="20" x2="12" y2="23"></line>
+              <line x1="1" y1="12" x2="4" y2="12"></line>
+              <line x1="20" y1="12" x2="23" y2="12"></line>
+            </svg>
+          </button>
+        </form>
+        <ul id="suggestions" class="suggestions" role="listbox" hidden></ul>
+      </div>
+
+      <div class="unit-toggle" role="group" aria-label="Temperature unit">
+        <button type="button" data-unit="celsius" class="active">°C</button>
+        <button type="button" data-unit="fahrenheit">°F</button>
+      </div>
+    </header>
+
+    <main id="main" aria-live="polite">
+
+      <div id="status" class="status" hidden></div>
+
+      <section id="content" class="content" hidden>
+
+        <!-- Current conditions -->
+        <section class="card current">
+          <div class="current-head">
+            <div>
+              <h1 id="place" class="place">—</h1>
+              <p id="localtime" class="muted">—</p>
+            </div>
+            <div id="current-icon" class="current-icon"></div>
+          </div>
+
+          <div class="current-body">
+            <div class="temp-block">
+              <p id="temp" class="temp">—</p>
+              <p id="condition" class="condition">—</p>
+              <p id="feels" class="muted">—</p>
+            </div>
+
+            <dl class="metrics">
+              <div class="metric">
+                <dt>Humidity</dt>
+                <dd id="m-humidity">—</dd>
+              </div>
+              <div class="metric">
+                <dt>Wind</dt>
+                <dd id="m-wind">—</dd>
+              </div>
+              <div class="metric">
+                <dt>Precipitation</dt>
+                <dd id="m-precip">—</dd>
+              </div>
+              <div class="metric">
+                <dt>Pressure</dt>
+                <dd id="m-pressure">—</dd>
+              </div>
+              <div class="metric">
+                <dt>Sunrise</dt>
+                <dd id="m-sunrise">—</dd>
+              </div>
+              <div class="metric">
+                <dt>Sunset</dt>
+                <dd id="m-sunset">—</dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        <!-- Hourly -->
+        <section class="card hourly-card">
+          <h2 class="card-title">Next 24 hours</h2>
+          <div class="hourly-scroll">
+            <ul id="hourly" class="hourly"></ul>
+          </div>
+        </section>
+
+        <!-- Daily -->
+        <section class="card daily-card">
+          <h2 class="card-title">7-day forecast</h2>
+          <ul id="daily" class="daily"></ul>
+        </section>
+
+      </section>
+    </main>
+
+    <footer class="footer">
+      Weather data by <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> — free, no API key.
+    </footer>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
